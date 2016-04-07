@@ -5,7 +5,6 @@ import random
 class Board:
     def __init__(self):
         self.depth = 1
-        self.turnColor = 'W'
         self.playerColor = 'W'
         self.board = []
 
@@ -23,15 +22,10 @@ class Board:
     def getDepthStr(self):
         return str(self.depth)
 
-    def setTurnColor(self, player):
-        self.player = player
-    def getTurnColor(self):
-        return self.player
-
-    def setPlayerColor(self, player):
-        self.player = player
+    def setPlayerColor(self, playerColor):
+        self.playerColor = playerColor
     def getPlayerColor(self):
-        return self.player
+        return self.playerColor
 
     def setBoard(self, board):
         self.board = board
@@ -53,7 +47,6 @@ board = Board()
 def chess_reset():
     # reset the state of the game / your internal variables - note that this function is highly dependent on your implementation
     board.setDepth(1)
-    board.setTurnColor('W')
     board.setPlayerColor('W')
     resetBoard = []
     resetBoard.append('kqbnr')
@@ -80,7 +73,7 @@ def chess_boardGet():
     '''
     strOut = ''
 
-    strOut += board.getDepthStr() + ' ' + board.getTurnColor() + '\n'
+    strOut += board.getDepthStr() + ' ' + board.getPlayerColor() + '\n'
     strOut += board.getBoardRow(0) + '\n'
     strOut += board.getBoardRow(1) + '\n'
     strOut += board.getBoardRow(2) + '\n'
@@ -102,7 +95,7 @@ def chess_boardSet(strIn):
     #print 'initialInfo = {0}'.format(initialInfo)
     #print 'initialInfo[0] = {0}'.format(initialInfo[0])
     board.setDepth(initialInfo[0])
-    board.setTurnColor(initialInfo[1])
+    board.setPlayerColor(initialInfo[1])
     newBoard = []
     newBoard.append(strIn[1])
     newBoard.append(strIn[2])
@@ -116,10 +109,6 @@ def chess_boardSet(strIn):
 
 def chess_winner():
     # determine the winner of the current state of the game and return '?' or '=' or 'W' or 'B' - note that we are returning a character and not a string
-
-    if 40 < board.getDepth():
-        #print 'Draw!'
-        return '='
 
     currBoard = board.getBoard()
     bKingAlive = False
@@ -138,6 +127,9 @@ def chess_winner():
     elif not bKingAlive:
         #print 'White Wins!'
         return 'W'
+    if 40 < board.getDepth():
+        # print 'Draw!'
+        return '='
     else:
         #print 'Game not over'
         return '?'
