@@ -4,7 +4,7 @@ import random
 
 class Board:
     def __init__(self):
-        self.depth = 1
+        self.depth = 0
         self.playerColor = 'W'
         self.board = []
 
@@ -33,6 +33,36 @@ class Board:
         return self.board
     def getBoardRow(self, rowNum):
         return self.board[rowNum]
+
+    def setPiece(self, row, col, piece):
+        listRow = list(self.board[row])
+        #self.board[row][col] = ()piece
+#        print("Piece: {0}".format(piece))
+#        print("ListRow before: {0}".format(listRow))
+        listRow[col] = piece
+#        print("ListRow after : {0}".format(listRow))
+        self.board[row] = "".join(listRow)
+        #self.board
+    def movePiece(self, start_row, start_col, end_row, end_col):
+        start_row = abs(start_row - 6) #-=  1 #abs(start_row - 6)
+        start_col = start_col - 1 #-= 1 #start_col - 1
+        end_row = abs(end_row - 6) #-= 1 #abs(end_row - 6)
+        end_col = end_col - 1 #-= 1 #end_col - 1
+#        print("{0}{1} {2}{3}").format(start_row, start_col, end_row, end_col)
+#        print("row: {0}".format(self.board[start_row]))
+        piece = self.board[start_row][start_col]
+#        print piece
+        if piece == "P" and end_row == 0:
+            piece = "Q"
+        elif piece == "p" and end_row == 5:
+            piece = "q"
+        self.setPiece(start_row, start_col, '.')
+        self.setPiece(end_row, end_col, piece)
+        if self.playerColor == "W":
+            self.playerColor = "B"
+        else: # self.playerColor == "B":
+            self.playerColor = "W"
+            self.depth += 1
 
 ##########################################################
 #                 V A R I A B L E S                      #
@@ -234,7 +264,28 @@ def chess_movesEvaluated():
 
 def chess_move(strIn):
     # perform the supplied move (for example 'a5-a4\n') and update the state of the game / your internal variables accordingly - note that it advised to do a sanity check of the supplied move
-    
+#    print("Before:")
+#    print strIn
+#    print chess_boardGet()
+    start_col = strIn[0]
+    start_col = change_str_to_num(start_col)
+#    print("start_col: {0}".format(start_col))
+#    print start_col
+    start_row = strIn[1]
+    start_row = change_str_to_num(start_row)
+#    print("start_row: {0}".format(start_row))
+    end_col = strIn[3]
+#    print end_col
+    end_col = change_str_to_num(end_col)
+#    print("end_col: {0}".format(end_col))
+#    print end_col
+    end_row = strIn[4]
+    end_row = change_str_to_num(end_row)
+#    print("end_row: {0}".format(end_row))
+
+    board.movePiece(start_row, start_col, end_row, end_col)
+#    print("After:")
+#    print chess_boardGet()
     pass
 
 
@@ -266,3 +317,19 @@ def chess_undo():
     # undo the last move and update the state of the game / your internal variables accordingly - note that you need to maintain an internal variable that keeps track of the previous history for this
     
     pass
+
+def change_str_to_num(str):
+    # return a number that indicates the
+    str = str.lower()
+    if(str == 'a' or str == '1'):
+        return 1
+    elif(str == 'b' or str == '2'):
+        return 2
+    elif(str == 'c' or str == '3'):
+        return 3
+    elif (str == 'd' or str == '4'):
+        return 4
+    elif (str == 'e' or str == '5'):
+        return 5
+    elif (str == '6'):
+        return 6
