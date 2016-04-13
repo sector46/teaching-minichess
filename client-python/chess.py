@@ -230,8 +230,54 @@ def chess_isNothing(strPiece):
 
 def chess_eval():
     # with reference to the state of the game, return the the evaluation score of the side on move - note that positive means an advantage while negative means a disadvantage
-    
-    return 0
+    board_state = board.getBoard()
+    score = 0
+    KING_VAL   = 100
+    QUEEN_VAL  = 25
+    BISHOP_VAL = 15
+    KNIGHT_VAL = 4
+    ROOK_VAL   = 10
+    PAWN_VAL   = 7
+
+    for row in board_state:
+        for piece in row:
+            piece_val = score
+            if piece.upper() == "K":
+                if chess_isOwn(piece):
+                    score += KING_VAL
+                else:
+                    score -= KING_VAL
+            elif piece.upper() == "Q":
+                if chess_isOwn(piece):
+                    score += QUEEN_VAL
+                else:
+                    score -= QUEEN_VAL
+            elif piece.upper() == "B":
+                if chess_isOwn(piece):
+                    score += BISHOP_VAL
+                else:
+                    score -= BISHOP_VAL
+            elif piece.upper() == "N":
+                if chess_isOwn(piece):
+                    score += KNIGHT_VAL
+                else:
+                    score -= KNIGHT_VAL
+            elif piece.upper() == "R":
+                if chess_isOwn(piece):
+                    score += ROOK_VAL
+                else:
+                    score -= ROOK_VAL
+            elif piece.upper() == "P":
+                if chess_isOwn(piece):
+                    score += PAWN_VAL
+                else:
+                    score -= PAWN_VAL
+
+#            piece_val = score - piece_val
+#            print("{0}: {1}".format(piece, piece_val))
+#        print("row: {0}".format(row))
+#    print("total score: {0}".format(score))
+    return score
 
 
 def chess_moves():
