@@ -80,13 +80,13 @@ public class chess {
 		
 		Vector<String> strOut = new Vector<String>();
 		
-		strOut.add("a5-a4\n");
-		strOut.add("b5-b4\n");
-		strOut.add("c5-c4\n");
-		strOut.add("d5-d4\n");
-		strOut.add("e5-e4\n");
-		strOut.add("b6-a4\n");
-		strOut.add("b6-c4\n");
+		strOut.add("a2-a3\n");
+		strOut.add("b2-b3\n");
+		strOut.add("c2-c3\n");
+		strOut.add("d2-d3\n");
+		strOut.add("e2-e3\n");
+		strOut.add("b1-a3\n");
+		strOut.add("b1-c3\n");
 		
 		return strOut;
 	}
@@ -98,7 +98,7 @@ public class chess {
 	}
 	
 	public static Vector<String> movesEvaluated() {
-		// with reference to the state of the game, determine the possible moves and sort them in order of an increasing evaluation score before returning them - note that you can call the chess.moves() function in here
+		// with reference to the state of the game, determine the possible moves and sort them in order of an increasing evaluation score before returning them - note that you can call the chess.movesShuffled() function in here
 		
 		return new Vector<String>();
 	}
@@ -110,25 +110,25 @@ public class chess {
 	public static String moveRandom() {
 		// perform a random move and return it - one example output is given below - note that you can call the chess.movesShuffled() function as well as the chess.move() function in here
 		
-		return "a5-a4\n";
+		return "a2-a3\n";
 	}
 	
 	public static String moveGreedy() {
 		// perform a greedy move and return it - one example output is given below - note that you can call the chess.movesEvaluated() function as well as the chess.move() function in here
 		
-		return "a5-a4\n";
+		return "a2-a3\n";
 	}
 	
 	public static String moveNegamax(int intDepth, int intDuration) {
 		// perform a negamax move and return it - one example output is given below - note that you can call the the other functions in here
 		
-		return "a5-a4\n";
+		return "a2-a3\n";
 	}
 	
 	public static String moveAlphabeta(int intDepth, int intDuration) {
 		// perform a alphabeta move and return it - one example output is given below - note that you can call the the other functions in here
 		
-		return "a5-a4\n";
+		return "a2-a3\n";
 	}
 	
 	public static void undo() {
