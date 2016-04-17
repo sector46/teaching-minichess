@@ -1,7 +1,18 @@
 import random
 
 ##########################################################
-
+"""
+        ***** DATA REPRESENTATION *****
+ Data Object:    Converted Actual:       Actual:
+    01234            12345                12345
+  0 kqbnr          6 kqbnr              F kqbnr
+  1 ppppp          5 ppppp              E ppppp
+  2 .....          4 .....              D .....
+  3 .....          3 .....              C .....
+  4 PPPPP          2 PPPPP              B PPPPP
+  5 KQBNR          1 KQBNR              A KQBNR
+"""
+##########################################################
 class Board:
     def __init__(self):
         self.depth = 0
@@ -63,6 +74,21 @@ class Board:
         else: # self.playerColor == "B":
             self.playerColor = "W"
             self.depth += 1
+
+class Piece_State:
+    def __init__(self, piece, row, column):
+        self.piece = piece
+        self.row = row
+        self.column = column
+
+    def getPiece(self):
+        return self.piece
+
+    def getRowVal(self):
+        return self.row
+
+    def getColVal(self):
+        return self.column
 
 ##########################################################
 #                 V A R I A B L E S                      #
@@ -284,6 +310,20 @@ def chess_moves():
     # with reference to the state of the game and return the possible moves - one example is given below - note that a move has exactly 6 characters
     
     strOut = []
+
+    pieces = []
+    for row in board.getBoard():
+        for piece in row:
+            if chess_isOwn(piece):
+                pieces.append(piece)
+
+    for piece in pieces:
+        end_moves = []
+        end_moves = calculate_moves(piece)
+        for end_move in end_moves:
+            chess_isValid()
+
+    # WRITE CONVERSION FROM ROW NUMBER TO ROW ALPHA CHARACTER
     
     strOut.append('a5-a4\n')
     strOut.append('b5-b4\n')
@@ -292,7 +332,10 @@ def chess_moves():
     strOut.append('e5-e4\n')
     strOut.append('b6-a4\n')
     strOut.append('b6-c4\n')
-    
+
+
+
+    print strOut
     return strOut
 
 
@@ -379,3 +422,10 @@ def change_str_to_num(str):
         return 5
     elif (str == '6'):
         return 6
+
+def change_num_to_str(num, isAlpha):
+    return 0
+
+def calculate_moves(piece):
+    moves = []
+    return moves
