@@ -2,15 +2,16 @@ import random
 
 ##########################################################
 """
-        ***** DATA REPRESENTATION *****
- Data Object:    Converted Actual:       Actual:
-    01234            12345                12345
-  0 kqbnr          6 kqbnr              F kqbnr
-  1 ppppp          5 ppppp              E ppppp
-  2 .....          4 .....              D .....
-  3 .....          3 .....              C .....
-  4 PPPPP          2 PPPPP              B PPPPP
-  5 KQBNR          1 KQBNR              A KQBNR
+ ***** DATA REPRESENTATION *****
+ Data Object:       Actual:
+    01234            abcde
+
+  0 kqbnr          6 kqbnr
+  1 ppppp          5 ppppp
+  2 .....          4 .....
+  3 .....          3 .....
+  4 PPPPP          2 PPPPP
+  5 RNBQK          1 RNBQK
 """
 ##########################################################
 class Board:
@@ -55,10 +56,10 @@ class Board:
         self.board[row] = "".join(listRow)
         #self.board
     def movePiece(self, start_row, start_col, end_row, end_col):
-        start_row = abs(start_row - 6) #-=  1 #abs(start_row - 6)
-        start_col = start_col - 1 #-= 1 #start_col - 1
-        end_row = abs(end_row - 6) #-= 1 #abs(end_row - 6)
-        end_col = end_col - 1 #-= 1 #end_col - 1
+        #start_row = abs(start_row - 6) #-=  1 #abs(start_row - 6)
+        #start_col = start_col - 1 #-= 1 #start_col - 1
+        #end_row = abs(end_row - 6) #-= 1 #abs(end_row - 6)
+        #end_col = end_col - 1 #-= 1 #end_col - 1
 #        print("{0}{1} {2}{3}").format(start_row, start_col, end_row, end_col)
 #        print("row: {0}".format(self.board[start_row]))
         piece = self.board[start_row][start_col]
@@ -80,7 +81,10 @@ class Piece_State:
         self.piece = piece
         self.row = row
         self.column = column
+        self.moves = []
 
+    def setPiece(self, piece):
+        self.piece = piece
     def getPiece(self):
         return self.piece
 
@@ -89,6 +93,11 @@ class Piece_State:
 
     def getColVal(self):
         return self.column
+
+    def setMoves(self, moves):
+        self.moves = moves
+    def getMoves(self):
+        return self.moves
 
 ##########################################################
 #                 V A R I A B L E S                      #
@@ -311,18 +320,46 @@ def chess_moves():
     
     strOut = []
 
-    pieces = []
-    for row in board.getBoard():
+    piece_states = []
+    rowCnt = 0
+    columnCnt = 0
+    #"""
+    curr_board = board.getBoard()
+    print "Start!"
+    for row in curr_board:
+        columnCnt = 0
+        print "row: {0}".format(row)
         for piece in row:
+            print "piece: {0}".format(piece)
             if chess_isOwn(piece):
-                pieces.append(piece)
+                piece_state = Piece_State(piece, rowCnt, columnCnt)
+                piece_states.append(piece_state)
+                print "grabbing piece: {0}".format(piece)
+            columnCnt += 1
+        rowCnt += 1
+    end_moves = []
 
-    for piece in pieces:
-        end_moves = []
-        end_moves = calculate_moves(piece)
-        for end_move in end_moves:
-            chess_isValid()
+    for piece_state in piece_states:
+        print "piece in piece states: {0}".format(piece_state.getPiece())
+        print "starting position: [{0},{1}]".format(piece_state.getRowVal(),piece_state.getColVal())
 
+    for piece_state in piece_states:
+        #print "piece in piece states: {0}".format(piece_state.getPiece())
+        new_piece_state = calculate_moves(piece_state)
+
+        if new_piece_state is not None:
+            #print "new piece state: piece = {0}, row,col = [{1},{2}]".format(new_piece_state.getPiece(),
+            #                                                                 new_piece_state.getRowVal(),
+            #                                                                 new_piece_state.getColVal())
+            end_moves.append(new_piece_state)
+
+
+    for state in end_moves:
+        print state.getPiece()
+        print "Start position: [{0},{1}]".format(state.getRowVal(), state.getColVal())
+        print "Possible moves: {0}".format(state.getMoves())
+    #print("End moves: {0}".format(end_moves))
+    #"""
     # WRITE CONVERSION FROM ROW NUMBER TO ROW ALPHA CHARACTER
     
     strOut.append('a5-a4\n')
@@ -353,28 +390,28 @@ def chess_movesEvaluated():
 
 def chess_move(strIn):
     # perform the supplied move (for example 'a5-a4\n') and update the state of the game / your internal variables accordingly - note that it advised to do a sanity check of the supplied move
-#    print("Before:")
-#    print strIn
-#    print chess_boardGet()
+    print("Before:")
+    print strIn
+    print chess_boardGet()
     start_col = strIn[0]
     start_col = change_str_to_num(start_col)
-#    print("start_col: {0}".format(start_col))
+    print("start_col: {0}".format(start_col))
 #    print start_col
     start_row = strIn[1]
     start_row = change_str_to_num(start_row)
-#    print("start_row: {0}".format(start_row))
+    print("start_row: {0}".format(start_row))
     end_col = strIn[3]
 #    print end_col
     end_col = change_str_to_num(end_col)
-#    print("end_col: {0}".format(end_col))
+    print("end_col: {0}".format(end_col))
 #    print end_col
     end_row = strIn[4]
     end_row = change_str_to_num(end_row)
-#    print("end_row: {0}".format(end_row))
+    print("end_row: {0}".format(end_row))
 
     board.movePiece(start_row, start_col, end_row, end_col)
-#    print("After:")
-#    print chess_boardGet()
+    print("After:")
+    print chess_boardGet()
     pass
 
 
@@ -410,22 +447,138 @@ def chess_undo():
 def change_str_to_num(str):
     # return a number that indicates the
     str = str.lower()
-    if(str == 'a' or str == '1'):
+    if(str == 'a'):
+        return 0
+    elif(str == 'b'):
         return 1
-    elif(str == 'b' or str == '2'):
+    elif(str == 'c'):
         return 2
-    elif(str == 'c' or str == '3'):
+    elif(str == 'd'):
         return 3
-    elif (str == 'd' or str == '4'):
+    elif(str == 'e'):
         return 4
-    elif (str == 'e' or str == '5'):
+    elif(str == '1'):
         return 5
-    elif (str == '6'):
-        return 6
+    elif(str == '2'):
+        return 4
+    elif(str == '3'):
+        return 3
+    elif(str == '4'):
+        return 2
+    elif(str == '5'):
+        return 1
+    elif(str == '6'):
+        return 0
+    return None
 
-def change_num_to_str(num, isAlpha):
-    return 0
+def change_num_to_str(num, toAlpha):
+    if toAlpha:
+        if num == 0:
+            return 'f'
+        elif num == 1:
+            return 'e'
+        elif num == 2:
+            return 'd'
+        elif num == 3:
+            return 'c'
+        elif num == 4:
+            return 'b'
+        elif num == 5:
+            return 'a'
+    else:
+        if num == 0:
+            return '1'
+        elif num == 1:
+            return '2'
+        elif num == 2:
+            return '3'
+        elif num == 3:
+            return '4'
+        elif num == 4:
+            return '5'
+    return None
 
-def calculate_moves(piece):
+def calculate_moves(piece_state):
+    # Constants contain the eigen vectors for each possible move
+    KING_AND_QUEEN_MOVES  = [[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]]
+    BISHOP_MOVES          = [[1,1],[-1,1],[-1,-1],[1,-1]]
+    KNIGHT_MOVES          = [[2,1],[1,2],[-1,2],[-2,1],[-2,-1],[-1,-2],[1,-2],[2,-1]]
+    ROOK_MOVES            = [[1,0],[0,1],[-1,0],[0,-1]]
+    PAWN_MOVES            = [[-1,0],[1,0]]
+
     moves = []
-    return moves
+    piece = piece_state.getPiece()
+    piece = piece.upper()
+    startRow = piece_state.getRowVal()
+    startCol = piece_state.getColVal()
+    if piece == 'K':
+        for poss_move in KING_AND_QUEEN_MOVES:
+            endRow = startRow + poss_move[0]
+            endCol = startCol + poss_move[1]
+            if chess_isValid(endCol, endRow):
+                #print "Valid"
+                moves.append([endRow, endCol])
+    elif piece == 'Q':
+        for poss_move in KING_AND_QUEEN_MOVES:
+            for i in range(1,6):
+                endRow = startRow + (poss_move[0] * i)
+                endCol = startCol + (poss_move[1] * i)
+                if chess_isValid(endCol, endRow):
+                    #print "Valid"
+                    moves.append([endRow, endCol])
+                else:
+                    # Doesn't check further moves in this direction
+                    break
+    elif piece == 'B':
+        for poss_move in BISHOP_MOVES:
+            for i in range(1, 6):
+                endRow = startRow + (poss_move[0] * i)
+                endCol = startCol + (poss_move[1] * i)
+                if chess_isValid(endCol, endRow):
+                    #print "Valid"
+                    moves.append([endRow, endCol])
+                else:
+                    # Doesn't check further moves in this direction
+                    break
+    elif piece == 'N':
+        for poss_move in KNIGHT_MOVES:
+            endRow = startRow + poss_move[0]
+            endCol = startCol + poss_move[1]
+            if chess_isValid(endCol, endRow):
+                #print "Valid"
+                moves.append([endRow, endCol])
+    elif piece == 'R':
+        for poss_move in ROOK_MOVES:
+            print "rook poss_move: {0}".format(poss_move)
+            for i in range(1, 6):
+                endRow = startRow + (poss_move[0] * i)
+                endCol = startCol + (poss_move[1] * i)
+                print "rook end: [{0},{1}]".format(endRow, endCol)
+                if chess_isValid(endCol, endRow):
+                    #print "Valid"
+                    moves.append([endRow, endCol])
+                else:
+                    # Doesn't check further moves in this direction
+                    break
+    elif piece == 'P':
+        # If White: pawn moves upward
+        if piece_state.getPiece().isupper():
+            print "White pawn move: [{0},{1}]".format(PAWN_MOVES[0][0], PAWN_MOVES[0][1])
+            endRow = startRow + PAWN_MOVES[0][0]
+            endCol = startCol + PAWN_MOVES[0][1]
+            if chess_isValid(endCol,endRow):
+                #print "Valid"
+                moves.append([endRow, endCol])
+        # If Black: pawn moves downward
+        else:
+            print "Black pawn move: [{0},{1}]".format(PAWN_MOVES[1][0], PAWN_MOVES[1][1])
+            endRow = startRow + PAWN_MOVES[1][0]
+            endCol = startCol + PAWN_MOVES[1][1]
+            if chess_isValid(endCol, endRow):
+                #print "Valid"
+                moves.append([endRow, endCol])
+    if len(moves) == 0:
+        piece_state.setMoves(None)
+    else:
+        piece_state.setMoves(moves)
+        return piece_state
