@@ -106,6 +106,7 @@ class Piece_State:
 ##########################################################
 
 board = Board()
+board_state_history = []
 
 ##########################################################
 #              E N D   V A R I A B L E S                 #
@@ -269,12 +270,12 @@ def chess_eval():
     # with reference to the state of the game, return the the evaluation score of the side on move - note that positive means an advantage while negative means a disadvantage
     board_state = board.getBoard()
     score = 0
-    KING_VAL   = 100
-    QUEEN_VAL  = 25
-    BISHOP_VAL = 15
-    KNIGHT_VAL = 4
-    ROOK_VAL   = 10
-    PAWN_VAL   = 7
+    KING_VAL   = 10000
+    QUEEN_VAL  = 100
+    BISHOP_VAL = 25
+    KNIGHT_VAL = 8
+    ROOK_VAL   = 20
+    PAWN_VAL   = 5
 
     for row in board_state:
         for piece in row:
@@ -368,14 +369,32 @@ def chess_moves():
 
 def chess_movesShuffled():
     # with reference to the state of the game, determine the possible moves and shuffle them before returning them- note that you can call the chess_moves() function in here
-    
-    return []
+    moves = chess_moves()
+    print moves
+    print 50*'X'
+    list_len = len(moves)
+    print "list length: {0}".format(list_len)
+    list_len_array = list_len-1
+    for i in range(0,list_len):
+        rand = random.randint(0,list_len_array)
+        print rand
+        move = moves.pop()
+        moves.insert(rand, move)
+    print moves
+    #moves.sort()
+    return moves
 
 
 def chess_movesEvaluated():
     # with reference to the state of the game, determine the possible moves and sort them in order of an increasing evaluation score before returning them - note that you can call the chess_movesShuffled() function in here
-    
-    return []
+    moves = chess_movesShuffled()
+
+    eval_scores = []
+    for move in moves:
+        chess_move(move)
+        eval_score = chess_eval()
+        chess_undo()
+    return moves
 
 
 def chess_move(strIn):
@@ -399,6 +418,8 @@ def chess_move(strIn):
     end_row = str_to_num(end_row)
     #print("end_row: {0}".format(end_row))
 
+    current_board = chess_boardGet()
+    board_state_history.append(current_board)
     board.movePiece(start_row, start_col, end_row, end_col)
     #print("After:")
     #print chess_boardGet()
@@ -431,7 +452,10 @@ def chess_moveAlphabeta(intDepth, intDuration):
 
 def chess_undo():
     # undo the last move and update the state of the game / your internal variables accordingly - note that you need to maintain an internal variable that keeps track of the previous history for this
-    
+    if 0 < len(board_state_history):
+        last_state = board_state_history.pop()
+        #print last_state
+        chess_boardSet(last_state)
     pass
 
 def str_to_num(str):
