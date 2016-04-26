@@ -370,17 +370,17 @@ def chess_moves():
 def chess_movesShuffled():
     # with reference to the state of the game, determine the possible moves and shuffle them before returning them- note that you can call the chess_moves() function in here
     moves = chess_moves()
-    print moves
-    print 50*'X'
+    #print moves
+    #print 50*'X'
     list_len = len(moves)
-    print "list length: {0}".format(list_len)
+    #print "list length: {0}".format(list_len)
     list_len_array = list_len-1
     for i in range(0,list_len):
         rand = random.randint(0,list_len_array)
-        print rand
+        #print rand
         move = moves.pop()
         moves.insert(rand, move)
-    print moves
+    #print moves
     #moves.sort()
     return moves
 
@@ -388,12 +388,38 @@ def chess_movesShuffled():
 def chess_movesEvaluated():
     # with reference to the state of the game, determine the possible moves and sort them in order of an increasing evaluation score before returning them - note that you can call the chess_movesShuffled() function in here
     moves = chess_movesShuffled()
+    #print "START"
+    #print moves
+
+    def getKey(item):
+        return item[0]
+
+    moves_total = len(moves)
 
     eval_scores = []
     for move in moves:
         chess_move(move)
         eval_score = chess_eval()
+        eval_scores.append(eval_score)
         chess_undo()
+
+    moves_eval = []
+    for i in range(0, moves_total):
+        moves_eval.append([eval_scores[i],moves[i]])
+
+    moves = []
+    sorted_tuple = sorted(moves_eval,key=getKey)
+    #print "MIDDLE"
+    #print sorted_tuple
+    #line = ""
+    for move in sorted_tuple:
+        #line += str(move[0])
+        moves.append(move[1])
+
+    #print "STRING"
+    #print line
+    #print moves
+    #print "END"
     return moves
 
 
