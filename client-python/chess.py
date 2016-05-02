@@ -455,13 +455,16 @@ def chess_move(strIn):
 def chess_moveRandom():
     # perform a random move and return it - one example output is given below - note that you can call the chess_movesShuffled() function as well as the chess_move() function in here
     moves = chess_movesShuffled()
+    #print "***** NEW ITERATION *****"
+    #print moves
     move = ''
+    length = len(moves)-1
     if 0 < len(moves):
-        move = moves[0]
+        move = moves[random.randint(0, length)]
     if move:
         #print move
+        #print "***** ITERATION FINISHED *****"
         chess_move(move)
-        move = move + '\n'
     return move
 
 
@@ -475,7 +478,6 @@ def chess_moveGreedy():
     if move:
         # print move
         chess_move(move)
-        move = move + '\n'
     return move
 
 
