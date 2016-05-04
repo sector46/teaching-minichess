@@ -125,6 +125,8 @@ def chess_reset():
     resetBoard.append('RNBQK')
 
     board.setBoard(resetBoard)
+
+    board_state_history = []
     #print 'Board has been reset!'
     return
 
@@ -483,9 +485,42 @@ def chess_moveGreedy():
 
 def chess_moveNegamax(intDepth, intDuration):
     # perform a negamax move and return it - one example output is given below - note that you can call the the other functions in here
-    
-    return 'c5-c4\n'
+    best = ""
+    score = -1000000
+    tmpScore = 0
+    moves = chess_movesShuffled()
 
+    for move in moves:
+        chess_move(move)
+        tmpScore = -negamax(intDepth - 1)
+        chess_undo()
+
+        #print "Move: {0}Score: {1}".format(move,tmpScore)
+
+        if score < tmpScore:
+
+            best = move
+            score = tmpScore
+    #score = negamax(intDepth)
+
+   # print "Negamax move: {0}".format(best)
+
+    #return 'c5-c4\n'
+    chess_move(best)
+    return best
+
+def negamax(depth):
+    if depth == 0:
+        return chess_eval()
+
+    score = -1000000
+
+    moves = chess_movesShuffled()
+    for move in moves:
+        chess_move(move)
+        score = max(score, -(negamax(depth - 1)))
+        chess_undo()
+    return score
 
 def chess_moveAlphabeta(intDepth, intDuration):
     # perform a alphabeta move and return it - one example output is given below - note that you can call the the other functions in here
