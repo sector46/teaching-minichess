@@ -524,9 +524,45 @@ def negamax(depth):
 
 def chess_moveAlphabeta(intDepth, intDuration):
     # perform a alphabeta move and return it - one example output is given below - note that you can call the the other functions in here
-    
-    return 'c5-c4\n'
 
+    best  = ''
+    alpha = -1000000
+    beta  = 1000000
+    temp  = 0
+
+    moves = chess_movesEvaluated()
+
+    for move in moves:
+        chess_move(move)
+        temp = -alphabeta(intDepth - 1, -beta, -alpha)
+        chess_undo()
+
+        if temp > alpha:
+            best = move
+            alpha = temp
+
+    chess_move(best)
+    return best #'c5-c4\n'
+
+
+def alphabeta(depth, alpha, beta):
+    if depth == 0 or chess_winner() != '?':
+        return chess_eval()
+
+    score = -1000000
+    moves = chess_movesEvaluated()
+
+    for move in moves:
+        chess_move(move)
+        score = max(score, -alphabeta(depth - 1, -beta, -alpha))
+        chess_undo()
+
+        alpha = max(alpha, score)
+
+        if alpha >= beta:
+            break
+
+    return score
 
 def chess_undo():
     # undo the last move and update the state of the game / your internal variables accordingly - note that you need to maintain an internal variable that keeps track of the previous history for this
