@@ -27,6 +27,16 @@ class Board:
         self.board.append('PPPPP')
         self.board.append('RNBQK')
 
+        # Move history consists of moves, described by a single string, so if
+        # the move was e2-e3, the history move would be: 'e2e3PP.W0'
+        # In the move, 0-1 are the start points of the move.
+        # 2-3 are the end points of the move.
+        # 4 is the previous state of the piece moving
+        # 5 is the previous state of the overwritten piece
+        # 6 is the player
+        # 7-... is the depth (if length is 9, position '8' is there)
+        self.move_history = []
+
     def setDepth(self, depth):
         self.depth = int(depth)
     def getDepth(self):
@@ -65,18 +75,39 @@ class Board:
 #        print("{0}{1} {2}{3}").format(start_row, start_col, end_row, end_col)
 #        print("row: {0}".format(self.board[start_row]))
         piece = self.board[start_row][start_col]
+        history_move = []
+        history_move.append(start_row)
+        history_move.append(start_col)
+        history_move.append(end_row)
+        history_move.append(end_col)
+        history_move.append(piece)
 #        print piece
         if piece == "P" and end_row == 0:
             piece = "Q"
         elif piece == "p" and end_row == 5:
             piece = "q"
         self.setPiece(start_row, start_col, '.')
+        captured_piece = self.board[end_row][end_col]
+        history_move.append(captured_piece)
+        history_move.append(self.playerColor)
+        history_move.append(self.depth)
+        self.move_history.append(history_move)
         self.setPiece(end_row, end_col, piece)
         if self.playerColor == "W":
             self.playerColor = "B"
         else: # self.playerColor == "B":
             self.playerColor = "W"
             self.depth += 1
+
+    def undo(self):
+        history_move = self.move_history.pop()
+        #print "history_move: {0}".format(history_move)
+        #print "first ({2}): [{0},{1}]".format(history_move[0], history_move[1], history_move[4])
+        #print "second ({2}): [{0},{1}]".format(history_move[2], history_move[3], history_move[5])
+        self.setPiece(history_move[0], history_move[1], history_move[4])
+        self.setPiece(history_move[2], history_move[3], history_move[5])
+        self.setPlayerColor(history_move[6])
+        self.setDepth(history_move[7])
 
 class Piece_State:
     def __init__(self, piece, row, column):
@@ -430,6 +461,8 @@ def chess_move(strIn):
     #print("Before:")
     #print strIn
     #print chess_boardGet()
+    if not 0 < len(strIn):
+        return None
     start_col = strIn[0]
     start_col = str_to_num(start_col)
     #print("start_col: {0}".format(start_col))
@@ -446,8 +479,9 @@ def chess_move(strIn):
     end_row = str_to_num(end_row)
     #print("end_row: {0}".format(end_row))
 
-    current_board = chess_boardGet()
-    board_state_history.append(current_board)
+    #print chess_boardGet()
+    #current_board = chess_boardGet()
+    #board_state_history.append(current_board)
     board.movePiece(start_row, start_col, end_row, end_col)
     #print("After:")
     #print chess_boardGet()
@@ -566,10 +600,11 @@ def alphabeta(depth, alpha, beta):
 
 def chess_undo():
     # undo the last move and update the state of the game / your internal variables accordingly - note that you need to maintain an internal variable that keeps track of the previous history for this
-    if 0 < len(board_state_history):
-        last_state = board_state_history.pop()
+    if 0 < len(board.move_history):
+        board.undo()
+        #last_state = board_state_history.pop()
         #print last_state
-        chess_boardSet(last_state)
+        #chess_boardSet(last_state)
     pass
 
 def str_to_num(str):
