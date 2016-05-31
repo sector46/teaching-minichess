@@ -1,6 +1,4 @@
-import Queue
 import random
-import threading
 import time
 
 ##########################################################
@@ -19,7 +17,7 @@ import time
 ##########################################################
 class Board:
     def __init__(self):
-        self.depth = 0
+        self.depth = 1
         self.playerColor = 'W'
         self.board = []
 
@@ -580,10 +578,12 @@ def chess_moveAlphabeta(intDepth, intDuration):
     iterative_best = ''
     keep_searching = True
 
-    start_time = time.time()
+    #start_time = time.time()
     time_counter = 0
 
     moves = chess_movesEvaluated()
+    if 0 < len(moves):
+        best = moves[0]
 
     if intDepth < 0:
         depth_start = 2
@@ -594,20 +594,21 @@ def chess_moveAlphabeta(intDepth, intDuration):
 
     print "Duration time = {}".format(intDuration)
     print "Max time = {}".format(turn_max_time)
+    #print "Depth Start: {}".format(depth_start)
 
     while keep_searching:
-        print "Depth Start: {}".format(depth_start)
+        #print "Depth Start: {}".format(depth_start)
         for move in moves:
             #print "move: {}".format(move)
             #print "for loop start"
             chess_move(move)
-            q = Queue.Queue()
-            t = threading.Thread(name='child procs', target=alphabeta, args=(q, depth_start - 1, -beta, -alpha))
-            t.start()
-            #temp = -alphabeta(depth_start - 1, -beta, -alpha)
-            t.join()
-            t.result_queue = q
-            temp = t.result_queue.get()
+            #q = Queue.Queue()
+            #t = threading.Thread(name='child procs', target=alphabeta, args=(q, depth_start - 1, -beta, -alpha))
+            #t.start()
+            temp = alphabeta(depth_start - 1, -beta, -alpha)
+            #t.join()
+            #t.result_queue = q
+            #temp = t.result_queue.get()
             #print "finished thread!"
             #print "1"
             chess_undo()
@@ -629,19 +630,18 @@ def chess_moveAlphabeta(intDepth, intDuration):
         depth_start += 1
 
     chess_move(iterative_best)
-    bench_end = time.time()
-    print "total time: {}".format(bench_end - bench_start)
+    #bench_end = time.time()
+    #print "total time: {}".format(bench_end - bench_start)
     return iterative_best #'c5-c4\n'
 
 
-def alphabeta(queue, depth, alpha, beta):
+def alphabeta(depth, alpha, beta):
     global time_counter
     global start_time
     global keep_searching
     global turn_max_time
     #print "Alphabeta function"
     if not keep_searching:
-    #    print 'return None'
         chess_undo()
         return 'None'
     time_counter += 1
@@ -654,23 +654,22 @@ def alphabeta(queue, depth, alpha, beta):
     #    print "after current"
         if turn_max_time < current_time:
     #        print "before queue empty"
-            if not queue.empty():
+            #if not queue.empty():
     #            print "in queue empty"
-                queue.get()
+            #    queue.get()
     #        print "after queue empty"
-            queue.put('None')
+            #queue.put('None')
     #        print "after queue put"
             keep_searching = False
-            chess_undo()
             return 'None'
     #print "After"
     if depth == 0 or chess_winner() != '?':
     #    print "winner!"
         val = chess_eval()
     #    print "value = {}".format(val)
-        if not queue.empty():
-            queue.get()
-        queue.put(val)
+        #if not queue.empty():
+        #    queue.get()
+        #queue.put(val)
         return val #chess_eval()
     #print "evaluated"
 
@@ -682,7 +681,7 @@ def alphabeta(queue, depth, alpha, beta):
     #    print "before moving"
         chess_move(move)
     #    print "Before recursion"
-        result = alphabeta(queue, depth - 1, -beta, -alpha)
+        result = alphabeta(depth - 1, -beta, -alpha)
     #    print "after recursion"
         if result == 'None':
             chess_undo()
@@ -695,9 +694,9 @@ def alphabeta(queue, depth, alpha, beta):
 
         if alpha >= beta:
             break
-    if not queue.empty():
-        queue.get()
-    queue.put(score)
+    #if not queue.empty():
+    #    queue.get()
+    #queue.put(score)
     return score
 
 def chess_undo():

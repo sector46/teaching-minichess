@@ -1,9 +1,12 @@
 import re
 
+import time
+
 import chess
 
 def main():
     #board = chess.Board()
+    chess.chess_reset()
 
     user_input = ''
     while(user_input != 'q' and user_input != 'quit'):
@@ -24,12 +27,16 @@ def main():
             move()
         elif user_input == 'ms' or user_input == 'moves':
             moves()
+        elif user_input == 'rm' or user_input == 'random_move':
+            random_move()
         elif user_input == 'tm' or user_input == 'tournament_move':
             tournament_move()
         elif user_input == 'am' or user_input == 'alphabeta_move':
             alphabeta_move()
         elif user_input == 'gh' or user_input == 'get_history':
             get_history()
+        elif user_input == 'pa' or user_input == 'play_alphabeta':
+            play_alphabeta()
         elif user_input == 'h' or user_input == 'help':
             print_help()
 
@@ -193,6 +200,12 @@ def moves():
         chess.chess_move(mv)
     return True
 
+def random_move():
+    move = chess.chess_moveRandom()
+    print "Move: {}".format(move)
+    print_board()
+    return True
+
 def alphabeta_move():
     print "Enter time restriction: "
     input_time = raw_input()
@@ -203,7 +216,9 @@ def alphabeta_move():
     if input_time < 0:
         print "Invalid time: less than 0"
         return False
-    chess.chess_moveAlphabeta(7, input_time)
+    move = chess.chess_moveAlphabeta(6, input_time)
+    print "Move: {}".format(move)
+    print_board()
     return True
 
 def tournament_move():
@@ -216,7 +231,9 @@ def tournament_move():
     if input_time < 0:
         print "Invalid time: less than 0"
         return False
-    chess.chess_moveAlphabeta(-1, input_time)
+    move = chess.chess_moveAlphabeta(-1, input_time)
+    print "Move: {}".format(move)
+    print_board()
     return True
 
 def get_history():
@@ -242,6 +259,48 @@ def get_history():
         print "{0}) {1}".format(i, history[i])
     return True
 
+def play_alphabeta():
+    print "Total starting time per side: 300000"
+    white_time = 300000
+    black_time = 300000
+    player = ''
+
+    while True:
+        check_winner = chess.chess_winner()
+        if check_winner == 'B':
+            print "Black wins!"
+            break
+        elif check_winner == 'W':
+            print "White wins!"
+            break
+        elif check_winner == '=':
+            print "Draw!"
+            break
+        else:
+            board = chess.chess_boardGet()
+            print board
+            if board[1] == ' ':
+                player = board[2]
+            else:
+                player = board[3]
+            move = ''
+            if player == 'B':
+                print "PERFORMING BLACK MOVE..."
+                print "Black time left: {}".format(black_time)
+                start_time = time.time()
+                move = chess.chess_moveAlphabeta(-1, black_time)
+                end_time = time.time()
+                black_time = black_time - (end_time - start_time)
+            else:
+                print "PERFORMING WHITE MOVE..."
+                print "White time left: {}".format(white_time)
+                start_time = time.time()
+                move = chess.chess_moveAlphabeta(-1, white_time)
+                end_time = time.time()
+                white_time = white_time - (end_time - start_time)
+            print "Move: {}".format(move)
+    return True
+
 def print_help():
     print "Type 'h' or 'help' to get this dialog."
     print "Type 'q' or 'quit' to exit the application."
@@ -252,9 +311,11 @@ def print_help():
     print "Type 'us' or 'undos' to undo a specified number of moves."
     print "Type 'm' or 'move' to move a piece."
     print "Type 'ms' or 'moves' to input a series of moves."
+    print "Type 'rm' or 'random_move' to input a random move"
     print "Type 'tm' or 'tournament_move' to input a tournament move."
-    print "Type 'am' or 'alphabeta_move' to input a normal alphabeta move"
-    print "Type 'gh' or 'get_history' to obtain the history of moves"
+    print "Type 'am' or 'alphabeta_move' to input a normal alphabeta move."
+    print "Type 'gh' or 'get_history' to obtain the history of moves."
+    print "Type 'pa' or 'play_alphabeta' to play a simulated game using alphabeta."
 
 if __name__ == "__main__":
     main()
