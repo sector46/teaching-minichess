@@ -24,6 +24,12 @@ def main():
             move()
         elif user_input == 'ms' or user_input == 'moves':
             moves()
+        elif user_input == 'tm' or user_input == 'tournament_move':
+            tournament_move()
+        elif user_input == 'am' or user_input == 'alphabeta_move':
+            alphabeta_move()
+        elif user_input == 'gh' or user_input == 'get_history':
+            get_history()
         elif user_input == 'h' or user_input == 'help':
             print_help()
 
@@ -187,16 +193,68 @@ def moves():
         chess.chess_move(mv)
     return True
 
+def alphabeta_move():
+    print "Enter time restriction: "
+    input_time = raw_input()
+    if not input_time.isdigit():
+        print "Invalid time: not a number"
+        return False
+    input_time = int(input_time)
+    if input_time < 0:
+        print "Invalid time: less than 0"
+        return False
+    chess.chess_moveAlphabeta(7, input_time)
+    return True
+
+def tournament_move():
+    print "Enter time restriction: "
+    input_time = raw_input()
+    if not input_time.isdigit():
+        print "Invalid time: not a number"
+        return False
+    input_time = int(input_time)
+    if input_time < 0:
+        print "Invalid time: less than 0"
+        return False
+    chess.chess_moveAlphabeta(-1, input_time)
+    return True
+
+def get_history():
+    history = chess.getHistory()
+    history_len = len(history)
+    if history_len == 0:
+        print "There are no entries in the history list."
+        return True
+    print "Enter the number of entries to see (max is {}: ".format(history_len)
+    entry_num = raw_input()
+    if not entry_num.isdigit():
+        print "Invalid input: not a number"
+        return False
+    entry_num = int(entry_num)
+    if entry_num < 0:
+        print "Invalid input: less than 0"
+        return False
+    if history_len < entry_num:
+        print "Invalid input: greater than number of entries available"
+        return False
+    start_point = history_len - entry_num
+    for i in range(start_point, history_len):
+        print "{0}) {1}".format(i, history[i])
+    return True
+
 def print_help():
     print "Type 'h' or 'help' to get this dialog."
     print "Type 'q' or 'quit' to exit the application."
     print "Type 's' or 'set' to set the board."
     print "Type 'p' or 'print' to print the current board state."
     print "Type 'r' or 'reset' to reset the board to a start state."
-    print "Type 'u' or 'undo' to undo a move"
-    print "Type 'us' or 'undos' to undo a specified number of moves"
+    print "Type 'u' or 'undo' to undo a move."
+    print "Type 'us' or 'undos' to undo a specified number of moves."
     print "Type 'm' or 'move' to move a piece."
     print "Type 'ms' or 'moves' to input a series of moves."
+    print "Type 'tm' or 'tournament_move' to input a tournament move."
+    print "Type 'am' or 'alphabeta_move' to input a normal alphabeta move"
+    print "Type 'gh' or 'get_history' to obtain the history of moves"
 
 if __name__ == "__main__":
     main()

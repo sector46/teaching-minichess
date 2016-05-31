@@ -1,4 +1,7 @@
+import Queue
 import random
+import threading
+import time
 
 ##########################################################
 """
@@ -138,6 +141,10 @@ class Piece_State:
 
 board = Board()
 board_state_history = []
+start_time = 0
+time_counter = 0
+turn_max_time = 0
+keep_searching = True
 
 ##########################################################
 #              E N D   V A R I A B L E S                 #
@@ -559,43 +566,138 @@ def negamax(depth):
 def chess_moveAlphabeta(intDepth, intDuration):
     # perform a alphabeta move and return it - one example output is given below - note that you can call the the other functions in here
 
+    global start_time
+    global time_counter
+    global turn_max_time
+    global keep_searching
+
+    bench_start = time.time()
+
     best  = ''
     alpha = -1000000
     beta  = 1000000
     temp  = 0
+    iterative_best = ''
+    keep_searching = True
+
+    start_time = time.time()
+    time_counter = 0
 
     moves = chess_movesEvaluated()
 
-    for move in moves:
-        chess_move(move)
-        temp = -alphabeta(intDepth - 1, -beta, -alpha)
+    if intDepth < 0:
+        depth_start = 2
+        turn_max_time = (intDuration / (40 - board.getDepth())) - 500
+    else:
+        depth_start = intDepth
+        turn_max_time = intDuration
+
+    print "Duration time = {}".format(intDuration)
+    print "Max time = {}".format(turn_max_time)
+
+    while keep_searching:
+        print "Depth Start: {}".format(depth_start)
+        for move in moves:
+            #print "move: {}".format(move)
+            #print "for loop start"
+            chess_move(move)
+            q = Queue.Queue()
+            t = threading.Thread(name='child procs', target=alphabeta, args=(q, depth_start - 1, -beta, -alpha))
+            t.start()
+            #temp = -alphabeta(depth_start - 1, -beta, -alpha)
+            t.join()
+            t.result_queue = q
+            temp = t.result_queue.get()
+            #print "finished thread!"
+            #print "1"
+            chess_undo()
+            #print "1"
+            #print temp
+            if temp == 'None':
+                break
+            else:
+                temp = -temp
+
+            if temp > alpha:
+                best = move
+                alpha = temp
+        if temp == 'None' or 0 < intDepth:
+            #print "Temp = None"
+            iterative_best = best
+            print "depth end: {}".format(depth_start)
+            break
+        depth_start += 1
+
+    chess_move(iterative_best)
+    bench_end = time.time()
+    print "total time: {}".format(bench_end - bench_start)
+    return iterative_best #'c5-c4\n'
+
+
+def alphabeta(queue, depth, alpha, beta):
+    global time_counter
+    global start_time
+    global keep_searching
+    global turn_max_time
+    #print "Alphabeta function"
+    if not keep_searching:
+    #    print 'return None'
         chess_undo()
-
-        if temp > alpha:
-            best = move
-            alpha = temp
-
-    chess_move(best)
-    return best #'c5-c4\n'
-
-
-def alphabeta(depth, alpha, beta):
+        return 'None'
+    time_counter += 1
+    #print time_counter
+    if 999 < time_counter:
+        time_counter = 0
+    #    print "before current"
+        current_time = (time.time() - start_time) * 1000
+    #    print "current_time: {}".format(current_time)
+    #    print "after current"
+        if turn_max_time < current_time:
+    #        print "before queue empty"
+            if not queue.empty():
+    #            print "in queue empty"
+                queue.get()
+    #        print "after queue empty"
+            queue.put('None')
+    #        print "after queue put"
+            keep_searching = False
+            chess_undo()
+            return 'None'
+    #print "After"
     if depth == 0 or chess_winner() != '?':
-        return chess_eval()
+    #    print "winner!"
+        val = chess_eval()
+    #    print "value = {}".format(val)
+        if not queue.empty():
+            queue.get()
+        queue.put(val)
+        return val #chess_eval()
+    #print "evaluated"
 
     score = -1000000
     moves = chess_movesEvaluated()
+    #print "got move list"
 
     for move in moves:
+    #    print "before moving"
         chess_move(move)
-        score = max(score, -alphabeta(depth - 1, -beta, -alpha))
+    #    print "Before recursion"
+        result = alphabeta(queue, depth - 1, -beta, -alpha)
+    #    print "after recursion"
+        if result == 'None':
+            chess_undo()
+            return result
+        else:
+            score = max(score, -result)     #alphabeta(queue, depth - 1, -beta, -alpha))
         chess_undo()
 
         alpha = max(alpha, score)
 
         if alpha >= beta:
             break
-
+    if not queue.empty():
+        queue.get()
+    queue.put(score)
     return score
 
 def chess_undo():
@@ -835,3 +937,6 @@ def convert_moves(start_move, end_moves):
         str_endCol = num_to_str(move[1], toAlpha=True)
         moves.append('{0}{1}-{2}{3}\n'.format(str_startCol, str_startRow, str_endCol, str_endRow))
     return moves
+
+def getHistory():
+    return board.move_history
