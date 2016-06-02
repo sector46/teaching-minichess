@@ -224,10 +224,15 @@ def alphabeta_move():
 def tournament_move():
     print "Enter time restriction: "
     input_time = raw_input()
-    if not input_time.isdigit():
+    try:
+        input_time = float(input_time)
+    except:
         print "Invalid time: not a number"
         return False
-    input_time = int(input_time)
+#    if not input_time.isdigit():
+#        print "Invalid time: not a number"
+#        return False
+    #input_time = int(input_time)
     if input_time < 0:
         print "Invalid time: less than 0"
         return False
@@ -290,14 +295,14 @@ def play_alphabeta():
                 start_time = time.time()
                 move = chess.chess_moveAlphabeta(-1, black_time)
                 end_time = time.time()
-                black_time = black_time - (end_time - start_time)
+                black_time = black_time - ((end_time - start_time) * 1000)
             else:
                 print "PERFORMING WHITE MOVE..."
                 print "White time left: {}".format(white_time)
                 start_time = time.time()
                 move = chess.chess_moveAlphabeta(-1, white_time)
                 end_time = time.time()
-                white_time = white_time - (end_time - start_time)
+                white_time = white_time - ((end_time - start_time) * 1000)
             print "Move: {}".format(move)
     return True
 

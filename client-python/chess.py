@@ -585,7 +585,7 @@ def chess_moveAlphabeta(intDepth, intDuration):
 
     if intDepth < 0:
         depth_start = 2
-        turn_max_time = (intDuration / (40 - board.getDepth())) - 500
+        turn_max_time = (intDuration / (41 - board.getDepth())) - 500
     else:
         depth_start = intDepth
         turn_max_time = intDuration
