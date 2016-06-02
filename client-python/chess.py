@@ -1,6 +1,8 @@
 import random
 
 ##########################################################
+import time
+
 """
  ***** DATA REPRESENTATION *****
  Data Object:       Actual:
@@ -138,6 +140,10 @@ class Piece_State:
 
 board = Board()
 board_state_history = []
+start_time = 0
+time_counter = 0
+turn_max_time = 0
+keep_searching = True
 
 ##########################################################
 #              E N D   V A R I A B L E S                 #
@@ -559,27 +565,80 @@ def negamax(depth):
 def chess_moveAlphabeta(intDepth, intDuration):
     # perform a alphabeta move and return it - one example output is given below - note that you can call the the other functions in here
 
+    global start_time
+    global time_counter
+    global turn_max_time
+    global keep_searching
+
     best  = ''
     alpha = -1000000
     beta  = 1000000
     temp  = 0
+    iterative_best = ''
+    keep_searching = True
+    start_time = time.time()
+    time_counter = 0
 
     moves = chess_movesEvaluated()
+    if 0 < len(moves):
+        best = moves[0]
 
-    for move in moves:
-        chess_move(move)
-        temp = -alphabeta(intDepth - 1, -beta, -alpha)
-        chess_undo()
+    if intDepth < 0:
+        depth_start = 2
+        turn_max_time = (intDuration / (40 - board.getDepth())) - 500
+    else:
+        depth_start = intDepth
+        turn_max_time = intDuration
+    print "Duration time = {}".format(intDuration)
+    print "Max time = {}".format(turn_max_time)
 
-        if temp > alpha:
-            best = move
-            alpha = temp
+    while keep_searching:
+        print "Depth Start: {}".format(depth_start)
+        for move in moves:
+            chess_move(move)
+            temp = alphabeta(depth_start - 1, -beta, -alpha)
+            chess_undo()
 
-    chess_move(best)
-    return best #'c5-c4\n'
+            if temp == 'None':
+                break
+            else:
+                temp = -temp
+            if temp > alpha:
+                best = move
+                alpha = temp
+        if temp == 'None' or 0 < intDepth:
+            # print "Temp = None"
+            iterative_best = best
+            print "depth end: {}".format(depth_start)
+            break
+        depth_start += 1
+
+    chess_move(iterative_best)
+    return iterative_best #'c5-c4\n'
 
 
 def alphabeta(depth, alpha, beta):
+    global time_counter
+    global start_time
+    global keep_searching
+    global turn_max_time
+    #print "Alphabeta!!"
+    if not keep_searching:
+        chess_undo()
+        return 'None'
+
+    time_counter += 1
+    # print time_counter
+    if 999 < time_counter:
+        time_counter = 0
+        # print "before current"
+        current_time = (time.time() - start_time) * 1000
+        # print "current_time: {}".format(current_time)
+        # print "after current"
+        if turn_max_time < current_time:
+            keep_searching = False
+            return 'None'
+
     if depth == 0 or chess_winner() != '?':
         return chess_eval()
 
@@ -588,7 +647,11 @@ def alphabeta(depth, alpha, beta):
 
     for move in moves:
         chess_move(move)
-        score = max(score, -alphabeta(depth - 1, -beta, -alpha))
+        result = alphabeta(depth - 1, -beta, -alpha)
+        if result == 'None':
+            chess_undo()
+            return result
+        score = max(score, -result) #max(score, -alphabeta(depth - 1, -beta, -alpha))
         chess_undo()
 
         alpha = max(alpha, score)
@@ -835,3 +898,6 @@ def convert_moves(start_move, end_moves):
         str_endCol = num_to_str(move[1], toAlpha=True)
         moves.append('{0}{1}-{2}{3}\n'.format(str_startCol, str_startRow, str_endCol, str_endRow))
     return moves
+
+def getHistory():
+    return board.move_history
