@@ -247,7 +247,7 @@ def get_history():
     if history_len == 0:
         print "There are no entries in the history list."
         return True
-    print "Enter the number of entries to see (max is {}: ".format(history_len)
+    print "Enter the number of entries to see (max is {}): ".format(history_len)
     entry_num = raw_input()
     if not entry_num.isdigit():
         print "Invalid input: not a number"
