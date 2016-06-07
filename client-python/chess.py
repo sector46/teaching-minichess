@@ -146,6 +146,7 @@ class Zobrist:
         self.last_side = None
         self.last_destination = None
         self.last_source = None
+        self.hash_table = {}
 
         self.zobrist_board = []
         for row in range (0,6):
@@ -213,6 +214,21 @@ class Zobrist:
                            self.zobrist_black ^ \
                            self.zobrist_white
         return self.zobrist_val
+
+    # uses an "always replace" method
+    def store(self, hash, bestValue, ttFlag, depth):
+        values = [bestValue, ttFlag, depth]
+        self.hash_table[hash] = values
+
+    def load(self):
+        zobrist_val = self.updateZobristVal()
+        if zobrist_val == None:
+            return None
+        if zobrist_val in self.hash_table.keys():
+            bestValue, flag, depth = self.hash_table[zobrist_val]
+            return [zobrist_val, bestValue, flag, depth]
+        else:
+            return zobrist_val
 
 ##########################################################
 #                 V A R I A B L E S                      #
@@ -681,7 +697,8 @@ def chess_moveAlphabeta(intDepth, intDuration):
         print "Depth Start: {}".format(depth_start)
         for move in moves:
             chess_move(move)
-            print zobrist.updateZobristVal()
+            zobrist.updateZobristVal()
+            #print zobrist.updateZobristVal()
             temp = alphabeta(depth_start - 1, -beta, -alpha)
             chess_undo()
 
@@ -728,10 +745,24 @@ def alphabeta(depth, alpha, beta):
     if depth == 0 or chess_winner() != '?':
         return chess_eval()
 
-    # print zobrist.hash_calculation(last_move[4])
-    z_val = zobrist.updateZobristVal()
-    if z_val != None:
-        print z_val
+    # Load from transposition table
+    loaded = zobrist.load()
+    if loaded != None and type(loaded) != long:
+        z_val = loaded[0]
+        ttScore = loaded[1]
+        ttFlag = loaded[2]
+        ttDepth = loaded[3]
+        if ttDepth >= depth:
+            if ttFlag == "Exact Value":
+                return ttScore
+            elif ttFlag == "Lower Bound":
+                alpha = max(alpha, ttScore)
+            elif ttFlag == "Upper Bound":
+                beta = min(beta, ttScore)
+            if alpha >= beta:
+                return ttScore
+    else:
+        z_val = loaded
 
     score = -1000000
     moves = chess_movesEvaluated()
@@ -749,6 +780,15 @@ def alphabeta(depth, alpha, beta):
 
         if alpha >= beta:
             break
+
+    # store in transposition table
+    if score <= alpha:
+        ttFlag = "Upper Bound"
+    elif score >= beta:
+        ttFlag = "Lower Bound"
+    else:
+        ttFlag = "Exact Value"
+    zobrist.store(z_val, score, ttFlag, depth)
 
     return score
 
