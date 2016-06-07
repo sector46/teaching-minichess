@@ -29,6 +29,8 @@ class Board:
         self.board.append('PPPPP')
         self.board.append('RNBQK')
 
+        #self.zobrist =
+
         # Move history consists of moves, described by a single string, so if
         # the move was e2-e3, the history move would be: 'e2e3PP.W0'
         # In the move, 0-1 are the start points of the move.
@@ -70,6 +72,7 @@ class Board:
     def getPiece(self, row, col):
         return self.board[row][col]
     def movePiece(self, start_row, start_col, end_row, end_col):
+        global last_move
         #start_row = abs(start_row - 6) #-=  1 #abs(start_row - 6)
         #start_col = start_col - 1 #-= 1 #start_col - 1
         #end_row = abs(end_row - 6) #-= 1 #abs(end_row - 6)
@@ -88,6 +91,7 @@ class Board:
             piece = "Q"
         elif piece == "p" and end_row == 5:
             piece = "q"
+        #last_move = [start_row, start_col, end_row, end_col, piece]
         self.setPiece(start_row, start_col, '.')
         captured_piece = self.board[end_row][end_col]
         history_move.append(captured_piece)
@@ -134,6 +138,98 @@ class Piece_State:
     def getMoves(self):
         return self.moves
 
+class Zobrist:
+    def __init__(self):
+        self.zobrist_val = 0
+        self.zobrist_black = random.getrandbits(BIT_SIZE) #randrange(0,LONG_LEN)
+        self.zobrist_white = random.getrandbits(BIT_SIZE) #randrange(0,LONG_LEN)
+        self.last_side = None
+        self.last_destination = None
+        self.last_source = None
+        self.hash_table = {}
+
+        self.zobrist_board = []
+        for row in range (0,6):
+            col_list = []
+
+            for col in range(0,5):
+                piece_type_list = []
+                for piece_type in PIECE_TYPE:
+                    #self.zobrist_board[row][col].append(piece_type)
+                    #self.zobrist_board[row][col][piece_type] = random.getrandbits(BIT_SIZE) #randrange(0,LONG_LEN)
+                    piece_type_list.append(random.getrandbits(BIT_SIZE))
+                col_list.append(piece_type_list)
+            self.zobrist_board.append(col_list)
+
+    def hash_calculation(self):
+        self.zobrist_val = 0
+        if board.getPlayerColor() == 'B':
+            self.zobrist_val ^= self.zobrist_black
+            self.last_side = self.zobrist_black
+        else:
+            self.zobrist_val ^= self.zobrist_white
+            self.last_side = self.zobrist_white
+        for row in range(0, 6):
+            for col in range(0, 5):
+                piece = board.getPiece(row, col)
+                if piece in PIECE_TYPE:
+                    #print piece
+                    piece_position = PIECE_TYPE.index(piece)
+                    self.zobrist_val ^= self.zobrist_board[row][col][piece_position]
+        return self.zobrist_val
+
+    def resetZobristVal(self):
+        self.zobrist_val = 0
+
+    def getZobristVal(self):
+        return self.zobrist_val
+
+    def updateZobristVal(self):
+        # source is the square where the piece is going to move from
+        # destination is the square where the piece is moving to
+        # side is the player color
+        if self.zobrist_val == 0:
+            return self.hash_calculation()
+        list_len = len(board.move_history)
+        if list_len < 1:
+            # no history available
+            return None
+        move = board.move_history[list_len - 1]
+        dest_piece = move[4]
+        if move[4] == 'P' and move[2] == 0:
+                dest_piece = "Q"
+        elif move[4] == "p" and move[2] == 5:
+                dest_piece = "q"
+        source_old_position = PIECE_TYPE.index(move[4])
+        source_new_position = PIECE_TYPE.index('.')
+        dest_old_position = PIECE_TYPE.index(move[5])
+        dest_new_position = PIECE_TYPE.index(dest_piece)
+
+        # example: move = [4, 1, 3, 1, 'P', '.', 'W', 1]
+        self.zobrist_val = self.zobrist_val ^ \
+                           self.zobrist_board[move[0]][move[1]][source_old_position] ^ \
+                           self.zobrist_board[move[0]][move[1]][source_new_position] ^ \
+                           self.zobrist_board[move[2]][move[3]][dest_old_position] ^ \
+                           self.zobrist_board[move[2]][move[3]][dest_new_position] ^ \
+                           self.zobrist_black ^ \
+                           self.zobrist_white
+        return self.zobrist_val
+
+    # uses an "always replace" method
+    def store(self, hash, bestValue, ttFlag, depth):
+        values = [bestValue, ttFlag, depth]
+        self.hash_table[hash] = values
+
+    def load(self):
+        zobrist_val = self.updateZobristVal()
+        if zobrist_val == None:
+            return None
+        if zobrist_val in self.hash_table.keys():
+            bestValue, flag, depth = self.hash_table[zobrist_val]
+            return [zobrist_val, bestValue, flag, depth]
+        else:
+            return zobrist_val
+
 ##########################################################
 #                 V A R I A B L E S                      #
 ##########################################################
@@ -144,6 +240,11 @@ start_time = 0
 time_counter = 0
 turn_max_time = 0
 keep_searching = True
+BIT_SIZE = 64
+LONG_LEN = 18446744073709551615
+PIECE_TYPE = ['P','N','R','B','Q','K','p','n','r','b','q','k','.']
+zobrist = Zobrist()
+last_move = None
 
 ##########################################################
 #              E N D   V A R I A B L E S                 #
@@ -596,6 +697,8 @@ def chess_moveAlphabeta(intDepth, intDuration):
         print "Depth Start: {}".format(depth_start)
         for move in moves:
             chess_move(move)
+            zobrist.updateZobristVal()
+            #print zobrist.updateZobristVal()
             temp = alphabeta(depth_start - 1, -beta, -alpha)
             chess_undo()
 
@@ -642,6 +745,25 @@ def alphabeta(depth, alpha, beta):
     if depth == 0 or chess_winner() != '?':
         return chess_eval()
 
+    # Load from transposition table
+    loaded = zobrist.load()
+    if loaded != None and type(loaded) != long:
+        z_val = loaded[0]
+        ttScore = loaded[1]
+        ttFlag = loaded[2]
+        ttDepth = loaded[3]
+        if ttDepth >= depth:
+            if ttFlag == "Exact Value":
+                return ttScore
+            elif ttFlag == "Lower Bound":
+                alpha = max(alpha, ttScore)
+            elif ttFlag == "Upper Bound":
+                beta = min(beta, ttScore)
+            if alpha >= beta:
+                return ttScore
+    else:
+        z_val = loaded
+
     score = -1000000
     moves = chess_movesEvaluated()
 
@@ -658,6 +780,15 @@ def alphabeta(depth, alpha, beta):
 
         if alpha >= beta:
             break
+
+    # store in transposition table
+    if score <= alpha:
+        ttFlag = "Upper Bound"
+    elif score >= beta:
+        ttFlag = "Lower Bound"
+    else:
+        ttFlag = "Exact Value"
+    zobrist.store(z_val, score, ttFlag, depth)
 
     return score
 
