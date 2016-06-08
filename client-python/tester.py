@@ -37,6 +37,8 @@ def main():
             get_history()
         elif user_input == 'pa' or user_input == 'play_alphabeta':
             play_alphabeta()
+        elif user_input == 'ph' or user_input == 'print_hashtable':
+            print_hash()
         elif user_input == 'h' or user_input == 'help':
             print_help()
 
@@ -306,6 +308,9 @@ def play_alphabeta():
             print "Move: {}".format(move)
     return True
 
+def print_hash():
+    chess.zobrist.printTable()
+
 def print_help():
     print "Type 'h' or 'help' to get this dialog."
     print "Type 'q' or 'quit' to exit the application."
@@ -321,6 +326,7 @@ def print_help():
     print "Type 'am' or 'alphabeta_move' to input a normal alphabeta move."
     print "Type 'gh' or 'get_history' to obtain the history of moves."
     print "Type 'pa' or 'play_alphabeta' to play a simulated game using alphabeta."
+    print "Type 'ph' or 'print_hash' to print the hash table."
 
 if __name__ == "__main__":
     main()

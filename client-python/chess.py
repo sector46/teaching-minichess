@@ -181,6 +181,13 @@ class Zobrist:
     def resetZobristVal(self):
         self.zobrist_val = 0
 
+    def resetZobrist(self):
+        self.zobrist_val = 0
+        self.hash_table = {}
+
+    def printTable(self):
+        print self.hash_table
+
     def getZobristVal(self):
         return self.zobrist_val
 
@@ -224,10 +231,10 @@ class Zobrist:
         zobrist_val = self.updateZobristVal()
         if zobrist_val == None:
             return None
-        if zobrist_val in self.hash_table.keys():
+        try:
             bestValue, flag, depth = self.hash_table[zobrist_val]
             return [zobrist_val, bestValue, flag, depth]
-        else:
+        except:
             return zobrist_val
 
 ##########################################################
@@ -692,6 +699,9 @@ def chess_moveAlphabeta(intDepth, intDuration):
         turn_max_time = intDuration
     print "Duration time = {}".format(intDuration)
     print "Max time = {}".format(turn_max_time)
+
+    # prevent hash table from getting too big
+    zobrist.resetZobrist()
 
     while keep_searching:
         print "Depth Start: {}".format(depth_start)
