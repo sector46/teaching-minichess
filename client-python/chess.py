@@ -701,7 +701,7 @@ def chess_moveAlphabeta(intDepth, intDuration):
     print "Max time = {}".format(turn_max_time)
 
     # prevent hash table from getting too big
-    zobrist.resetZobrist()
+    #zobrist.resetZobrist()
 
     while keep_searching:
         print "Depth Start: {}".format(depth_start)
